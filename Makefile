@@ -30,6 +30,9 @@ run: build
 	@echo ''
 	@$(DOCKER_RUN) ./$(EXEC)
 
+debug: build
+	$(DOCKER_RUN) gdb $(EXEC)
+
 build_docker:
 	docker build -t $(DOCKER_NAME) .
 
