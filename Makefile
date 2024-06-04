@@ -5,7 +5,7 @@ DOCKER_RUN = docker run \
 
 CC = gcc
 EXEC = target/main
-CFLAGS=-g -ggdb 
+CFLAGS=-g -ggdb -Wall
 LDFLAGS=-lavcodec -lavdevice -lavfilter -lavformat \
 				-lavutil -lpostproc -lswresample -lswscale
 DEPS = 
@@ -25,8 +25,10 @@ _docker_build: $(OBJ)
 build:
 	$(DOCKER_RUN) bear -- make _docker_build
 
+# echo newlines for readability
 run: build
-	$(DOCKER_RUN) echo "" && ./$(EXEC)
+	@echo ''
+	@$(DOCKER_RUN) ./$(EXEC)
 
 build_docker:
 	docker build -t $(DOCKER_NAME) .
