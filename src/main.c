@@ -17,13 +17,13 @@ int main(int argc, char **argv) {
 	/* AVFormat library - decoding media documentation:
 	 * https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#details */
 	if (ret < 0) {
-		printf("Open failed. Does file %s exist?\n", filename);
+		fprintf(stderr, "Open failed. Does file %s exist?\n", filename);
 		exit(1);
 	}
 	/* Certain details are not present in headers */
 	ret = avformat_find_stream_info(s, NULL);
 	if (ret < 0) {
-		printf("Finding stream failed. Check %s health\n", filename);
+		fprintf(stderr, "Finding stream failed. Check %s health\n", filename);
 		goto close;
 	}
 	printf("Filename: %s\n"   \
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 	/* Read each frame in the video */
 	AVPacket *pkt = av_packet_alloc();
 	if (pkt == NULL) {
-		printf("Packet allocation failed.");
+		fprintf(stderr, "Packet allocation failed.");
 		ret = -1;
 		goto close;
 	}
@@ -65,14 +65,14 @@ int process_packet(AVPacket* pkt) {
 	__label__ free_context;
 	const AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_MPEG4);
 	if (codec == NULL) {
-		printf("Error while finding AV Codec\n");
+		fprintf(stderr, "Error while finding AV Codec\n");
 		return 1;
 	}
 	int ret = 0;
 	/* 1. Allocate Codec context */
 	AVCodecContext *avctx = avcodec_alloc_context3(codec);
 	if (avctx == NULL) {
-		printf("Error while allocating AV Codec context\n");
+		fprintf(stderr, "Error while allocating AV Codec context\n");
 		ret = 1;
 		goto free_context;
 	}
@@ -81,14 +81,14 @@ int process_packet(AVPacket* pkt) {
 	 * instead of once-per-packet */
 	ret = avcodec_open2(avctx, codec, NULL);
 	if (ret) {
-		printf("Error while opening codec context\n");
+		fprintf(stderr, "Error while opening codec context\n");
 		goto free_context;
 	}
 	/* 3. Decode packet with MP4 context 
 	 * TODO: Warning: The input buffer, avpkt->data must be 
 	 * AV_INPUT_BUFFER_PADDING_SIZE larger than the actual read bytes because some 
 	 * optimized bitstream readers read 32 or 64 bits at once and could read over 
-	 * the end. How do you determine the read bytes? */
+	 * the end. How do you determine the size of read bytes before decoding? */
 	ret = avcodec_send_packet(avctx, pkt);
 	switch(ret) {
 		case 0:
@@ -96,16 +96,16 @@ int process_packet(AVPacket* pkt) {
 			printf("Packet decoding successful.\n");  // TODO: remove statement
 			break;
 		case AVERROR(EAGAIN): 
-			printf("Not implemented yet.\n");
+			fprintf(stderr, "Not implemented yet.\n");
 			goto free_context;
 		case AVERROR(EINVAL): 
-			printf("Codec has not been opened.\n");
+			fprintf(stderr, "Codec has not been opened.\n");
 			goto free_context;
 		case AVERROR(ENOMEM):
-			printf("Failure to add packet to queue.\n");
+			fprintf(stderr, "Failure to add packet to queue.\n");
 			goto free_context;
 		default:
-			printf("Error decoding packet.\n");
+			fprintf(stderr, "Error decoding packet.\n");
 			goto free_context;
 	}
 	free_context:
